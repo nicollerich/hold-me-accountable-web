@@ -1,7 +1,7 @@
 // app.jsx — top-level state, routing, theming, tweaks
 import React from "react";
 import { useTweaks, TweaksPanel, TweakSection, TweakToggle, TweakSlider, TweakButton } from "./tweaks-panel.jsx";
-import { IOSDevice } from "./ios-frame.jsx";
+import { IOSDevice, useIsCompact } from "./ios-frame.jsx";
 import { loadState, saveState, todayLabel, medDoses, medAllTaken, makeRandomPerson, uid, loadSession, saveSession } from "./data.jsx";
 import { WelcomeScreen, AuthScreen } from "./onboarding.jsx";
 import { HomeScreen, DetailScreen } from "./screens-main.jsx";
@@ -34,6 +34,7 @@ function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const theme = themeFor(t.dark);
   const speed = t.pillSpeed;
+  const compact = useIsCompact(); // phone-sized viewport → fill the screen, hide dev chrome
 
   const [session, setSession] = useStateApp(() => loadSession());
   // "keep me signed in" → persist the email; otherwise remember only that they
@@ -190,7 +191,7 @@ function App() {
   const sharePerson = shareId ? state.people.find(p => p.id === shareId) : null;
 
   return (
-    <div style={{ width: "100%", minHeight: "100vh", display: "grid", placeItems: "center", padding: 24, boxSizing: "border-box" }}>
+    <div style={{ width: "100%", minHeight: compact ? "100dvh" : "100vh", display: "grid", placeItems: "center", padding: compact ? 0 : 24, boxSizing: "border-box" }}>
       <IOSDevice dark={t.dark}>
         {!session.email ? (
           <div style={{ height: "100%", overflowY: "auto", background: theme.appBg }}>
@@ -266,15 +267,19 @@ function App() {
         )}
       </IOSDevice>
 
-      <TweaksPanel>
-        <TweakSection label="Theme" />
-        <TweakToggle label="Dark mode" value={t.dark} onChange={(v) => setTweak("dark", v)} />
-        <TweakSection label="Pills" />
-        <TweakSlider label="Float / rotate speed" value={t.pillSpeed} min={0} max={2.5} step={0.1}
-          unit="×" onChange={(v) => setTweak("pillSpeed", v)} />
-        <TweakSection label="Notifications" />
-        <TweakButton label="Send a reminder" onClick={fireNotif} />
-      </TweaksPanel>
+      {/* dev/demo tweaks panel — desktop only; on a phone it floats over the app.
+          Dark mode is reachable from in-app Settings, and reminders auto-fire. */}
+      {!compact && (
+        <TweaksPanel>
+          <TweakSection label="Theme" />
+          <TweakToggle label="Dark mode" value={t.dark} onChange={(v) => setTweak("dark", v)} />
+          <TweakSection label="Pills" />
+          <TweakSlider label="Float / rotate speed" value={t.pillSpeed} min={0} max={2.5} step={0.1}
+            unit="×" onChange={(v) => setTweak("pillSpeed", v)} />
+          <TweakSection label="Notifications" />
+          <TweakButton label="Send a reminder" onClick={fireNotif} />
+        </TweaksPanel>
+      )}
     </div>
   );
 }
