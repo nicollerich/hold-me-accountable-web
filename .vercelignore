@@ -1,0 +1,14 @@
+# Vercel installs deps and rebuilds — don't upload these.
+node_modules
+dist
+.vite
+
+# Secrets: the key is set as a Vercel env var, never shipped in the bundle.
+.env.local
+*.local
+
+# Unused at runtime: on-device OCR pulls the language data from a CDN
+# (see src/ocr.js), so this 5 MB file doesn't need to be deployed.
+eng.traineddata
+
+.DS_Store

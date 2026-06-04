@@ -1,0 +1,50 @@
+/* Base styles + animation keyframes — ported from the prototype's <style> block. */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: #DAD8D3;
+  font-family: 'Atkinson Hyperlegible', -apple-system, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+#root { min-height: 100vh; }
+
+@keyframes pillFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+@keyframes scanLine {
+  0% { top: 22%; } 50% { top: 76%; } 100% { top: 22%; }
+}
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0); opacity: 1; }
+  100% { transform: translateY(620px) rotate(540deg); opacity: 0; }
+}
+@keyframes notifIn {
+  0% { transform: translateY(-130%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes notifUp {
+  0% { transform: translateY(140%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes sparkleOut {
+  0%   { transform: translate(0,0) rotate(45deg) scale(0.2); opacity: 0; }
+  25%  { opacity: 1; }
+  100% { transform: translate(var(--tx,0), var(--ty,0)) rotate(225deg) scale(1); opacity: 0; }
+}
+/* onboarding card marquee — drifts right → left, looping seamlessly (2 copies → -50%) */
+@keyframes marqueeLeft {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* subtle float for the welcome cards (applied to a wrapper so it doesn't clash
+   with each card's fixed rotation) */
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+/* keep three.js canvases from hijacking vertical scroll on cards */
+canvas { display: block; }

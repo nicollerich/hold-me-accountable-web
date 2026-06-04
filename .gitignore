@@ -1,0 +1,8 @@
+node_modules
+dist
+.DS_Store
+*.local
+.vite
+
+# 5 MB Tesseract language data — unused at runtime (OCR loads it from a CDN, see src/ocr.js)
+eng.traineddata
