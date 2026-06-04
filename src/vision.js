@@ -60,3 +60,34 @@ export async function scanLabel(dataUrl, opts = {}) {
   }
   return readLabel(dataUrl, opts);
 }
+
+// Ask Claude vision for a pill's shape + color(s). Returns { primary, geo,
+// secondary? } shaped like the on-device analyzePill(), or null when the AI is
+// unavailable / couldn't read a color (caller then uses the local heuristic).
+export async function identifyPillWithAI(dataUrl) {
+  try {
+    const image = await shrink(dataUrl);
+    const r = await fetch("/api/pill-vision/identify", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ image, mode: "pill" }),
+    });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const hex = (v) => (typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v.trim())) ? v.trim() : null;
+    const primary = hex(j && j.primary);
+    if (!primary) return null;
+    const geo = j.shape === "capsule" ? "capsule" : "tablet";
+    const secondary = geo === "capsule" ? hex(j.secondary) : null;
+    return secondary ? { primary, secondary, geo } : { primary, geo };
+  } catch (e) { return null; }
+}
+
+// Best available pill read: Claude vision if enabled, else null so the caller
+// falls back to the on-device color/shape heuristic.
+export async function scanPill(dataUrl) {
+  if (await visionEnabled()) {
+    const ai = await identifyPillWithAI(dataUrl);
+    if (ai && ai.primary) return ai;
+  }
+  return null;
+}

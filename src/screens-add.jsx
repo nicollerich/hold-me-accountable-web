@@ -4,7 +4,7 @@ import { uid, doseTimesFor, colorFor, inkFor, todayLabel } from "./data.jsx";
 import { Icon, ScreenHeader } from "./components.jsx";
 import { LiquidPill3D } from "./pill3d.jsx";
 import { createScanner } from "./ocr.js";
-import { visionEnabled, identifyWithAI, scanLabel } from "./vision.js";
+import { visionEnabled, identifyWithAI, scanLabel, scanPill } from "./vision.js";
 
 const { useState: useStateA, useRef: useRefA, useEffect: useEffectA } = React;
 const FONT = "'Atkinson Hyperlegible', system-ui";
@@ -338,10 +338,13 @@ function AddMedicineFlow({ theme, onCancel, onAdd }) {
   const onPill = async (dataUrl) => {
     setPillPhoto(dataUrl);
     setStep("analyzing");
-    const [{ primary, secondary, geo }, label] = await Promise.all([
-      analyzePill(dataUrl),
+    // Claude vision reads the pill's shape + color(s); fall back to the on-device
+    // pixel heuristic when AI is unavailable (or can't make out the pill).
+    const [aiPill, label] = await Promise.all([
+      scanPill(dataUrl).catch(() => null),
       labelRef.current || Promise.resolve({ name: "", dose: "", schedule: null }),
     ]);
+    const { primary, secondary, geo } = aiPill || await analyzePill(dataUrl);
     const schedule = label.schedule || "Once Daily";
     const time = schedule === "Nightly" ? "9:00 PM" : "8:00 AM";
     setDraft({
